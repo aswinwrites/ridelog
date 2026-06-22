@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-geist-sans: "Inter", system-ui, sans-serif;
+    --font-geist-mono: "JetBrains Mono", monospace;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    height: 100%;
+  }
+
+  body {
+    background-color: #08080F;
+    color: #FFFFFF;
+    font-family: var(--font-geist-sans);
+    min-height: 100%;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2D2D42;
+    border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #44445A;
+  }
+
+  /* Remove number input arrows */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+@layer utilities {
+  .safe-pb {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-pt {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Glass morphism */
+  .glass {
+    background: rgba(28, 28, 40, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .glass-sm {
+    background: rgba(28, 28, 40, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  /* Gradient text */
+  .text-gradient-orange {
+    background: linear-gradient(135deg, #FF6B2B, #FFB800);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-cyan {
+    background: linear-gradient(135deg, #00C9FF, #1EE8A0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glow effects */
+  .glow-orange {
+    box-shadow: 0 0 24px rgba(255, 107, 43, 0.4);
+  }
+
+  .glow-orange-sm {
+    box-shadow: 0 0 12px rgba(255, 107, 43, 0.3);
+  }
+
+  /* Number display font */
+  .font-numeric {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Map container fix */
+.leaflet-container {
+  background: #111118 !important;
+  font-family: var(--font-geist-sans) !important;
+}
+
+.leaflet-tile-container img {
+  filter: brightness(0.7) saturate(0.8) hue-rotate(180deg) invert(1) !important;
+}
+
+/* Custom map dark mode filter */
+.leaflet-map-dark .leaflet-tile-container img {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) saturate(0.7) !important;
+}
+
+/* Framer Motion */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.03) 100%
+  );
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Speed odometer font */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.speed-digit {
+  animation: countUp 0.15s ease-out;
+  display: inline-block;
+}
