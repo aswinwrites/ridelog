@@ -75,8 +75,8 @@ export function ActiveRideScreen() {
           duration_min: Math.round(ride.analytics.durationSeconds / 60),
           avg_speed_kmh: Math.round(ride.analytics.avgSpeedKmh * 10) / 10,
           max_speed_kmh: Math.round(ride.analytics.topSpeedKmh * 10) / 10,
-          signal_stops: ride.analytics.signalStops,
-          hard_braking_count: ride.analytics.hardBrakingEvents,
+          signal_stops: ride.analytics.signals.count,
+          hard_braking_count: ride.analytics.braking.hardEvents,
           bike_id: ride.bikeId,
         });
         router.replace(`/rides/${ride.id}`);
