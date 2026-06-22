@@ -6,6 +6,12 @@ import { Plus, Bike, Wrench, Fuel, Calendar, DollarSign, ChevronRight, Star, Tra
 import { useBikeStore } from "@/store/useBikeStore";
 import type { Bike as BikeType, MaintenanceRecord, MaintenanceType } from "@/types";
 import { formatDate, formatCurrency, uuid } from "@/lib/utils/format";
+import {
+  trackBikeAdded,
+  trackBikeDeleted,
+  trackBikeSetDefault,
+  trackMaintenanceLogged,
+} from "@/lib/analytics/gtag";
 
 const MAINTENANCE_LABELS: Record<MaintenanceType, string> = {
   service: "Full Service",
@@ -67,6 +73,12 @@ export function BikeScreen() {
     setSelectedBikeId(bike.id);
     setShowAddBike(false);
     setBikeForm({ name: "", make: "", model: "", year: "", currentOdometer: "", fuelEfficiencyKmL: "" });
+    trackBikeAdded({
+      has_make: !!bikeForm.make,
+      has_model: !!bikeForm.model,
+      has_year: !!bikeForm.year,
+      has_odometer: !!bikeForm.currentOdometer,
+    });
   };
 
   const handleAddMaintenance = async () => {
@@ -81,6 +93,11 @@ export function BikeScreen() {
     });
     setShowAddMaintenance(false);
     setMaintForm({ type: "service", date: new Date().toISOString().slice(0, 10), cost: "", notes: "", serviceProvider: "" });
+    trackMaintenanceLogged({
+      type: maintForm.type,
+      has_cost: !!maintForm.cost,
+      has_provider: !!maintForm.serviceProvider,
+    });
   };
 
   return (
@@ -141,7 +158,7 @@ export function BikeScreen() {
                   <div className="flex items-center gap-2">
                     {!selectedBike.isDefault && (
                       <button
-                        onClick={() => setDefaultBike(selectedBike.id)}
+                        onClick={() => { setDefaultBike(selectedBike.id); trackBikeSetDefault(); }}
                         className="text-xs text-muted-foreground bg-bg-surface px-2.5 py-1.5 rounded-lg"
                       >
                         Set default
@@ -314,7 +331,7 @@ function BottomSheet({ show, onClose, title, children }: {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-40 bg-bg-card rounded-t-3xl p-6 safe-pb max-h-[85vh] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 z-40 bg-bg-card rounded-t-3xl p-6 pb-10 safe-pb max-h-[90vh] overflow-y-auto"
           >
             <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
             <h3 className="text-lg font-bold mb-5">{title}</h3>

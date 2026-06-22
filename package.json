@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "next": "^15.3.4",
+    "firebase": "^10.14.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5",
@@ -46,6 +47,6 @@
   },
   "devDependencies": {
     "eslint": "^8",
-    "eslint-config-next": "15.0.4"
+    "eslint-config-next": "^15.3.4"
   }
 }

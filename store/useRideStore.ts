@@ -192,8 +192,11 @@ export const useRideStore = create<RideStore>()(
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
       if (tickerId !== null) clearInterval(tickerId);
 
-      // Save any buffered points
-      const pendingPoints = active.points;
+      // Save only un-batched remainder to prevent duplicate points.
+      // _addPoint already flushed complete batches of 30 during recording.
+      const totalPoints = active.points.length;
+      const alreadyFlushed = Math.floor(totalPoints / 30) * 30;
+      const pendingPoints = active.points.slice(alreadyFlushed);
       if (pendingPoints.length > 0) {
         await appendRidePoints(active.rideId, pendingPoints);
       }
@@ -261,14 +264,23 @@ export const useRideStore = create<RideStore>()(
       const { active } = get();
       if (!active.isRecording || !active.rideId) return;
 
+      const { latitude, longitude, speed, altitude, heading, accuracy } = position.coords;
+
+      // Validate GPS bounds — reject garbage readings
+      if (
+        latitude < -90 || latitude > 90 ||
+        longitude < -180 || longitude > 180 ||
+        accuracy > 200 // ignore readings with >200m accuracy
+      ) return;
+
       const point: RidePoint = {
         timestamp: position.timestamp,
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        speed: position.coords.speed ? position.coords.speed * 3.6 : 0, // m/s → km/h
-        altitude: position.coords.altitude ?? 0,
-        heading: position.coords.heading ?? 0,
-        accuracy: position.coords.accuracy,
+        latitude,
+        longitude,
+        speed: speed != null && speed >= 0 ? Math.min(speed * 3.6, 400) : 0, // m/s → km/h, cap at 400
+        altitude: altitude ?? 0,
+        heading: heading ?? 0,
+        accuracy,
       };
 
       get()._addPoint(point);

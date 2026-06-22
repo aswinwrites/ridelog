@@ -9,6 +9,12 @@ import { useRideStore } from "@/store/useRideStore";
 import { useBikeStore } from "@/store/useBikeStore";
 import { formatDuration, formatDistance, formatSpeed } from "@/lib/utils/format";
 import { Speedometer } from "./Speedometer";
+import {
+  trackRideStarted,
+  trackRidePaused,
+  trackRideResumed,
+  trackRideEnded,
+} from "@/lib/analytics/gtag";
 import { LiveStatBar } from "./LiveStatBar";
 import { SignalIndicator } from "./SignalIndicator";
 
@@ -42,7 +48,9 @@ export function ActiveRideScreen() {
       }
       navigator.geolocation.getCurrentPosition(
         () => {
-          startRide(bike?.id).catch(console.error);
+          startRide(bike?.id).then(() => {
+            trackRideStarted({ bike_id: bike?.id, has_gps: true });
+          }).catch(console.error);
         },
         (err) => {
           setGpsError(
@@ -61,7 +69,16 @@ export function ActiveRideScreen() {
     setIsEnding(true);
     try {
       const ride = await endRide();
-      if (ride) {
+      if (ride && ride.analytics) {
+        trackRideEnded({
+          distance_km: Math.round(ride.analytics.distanceKm * 10) / 10,
+          duration_min: Math.round(ride.analytics.durationSeconds / 60),
+          avg_speed_kmh: Math.round(ride.analytics.avgSpeedKmh * 10) / 10,
+          max_speed_kmh: Math.round(ride.analytics.maxSpeedKmh * 10) / 10,
+          signal_stops: ride.analytics.signalStops,
+          hard_braking_count: ride.analytics.hardBrakingEvents,
+          bike_id: ride.bikeId,
+        });
         router.replace(`/rides/${ride.id}`);
       } else {
         router.replace("/");
@@ -73,9 +90,14 @@ export function ActiveRideScreen() {
   }, [endRide, router, isEnding]);
 
   const handlePauseResume = useCallback(() => {
-    if (active.isPaused) resumeRide();
-    else pauseRide();
-  }, [active.isPaused, pauseRide, resumeRide]);
+    if (active.isPaused) {
+      resumeRide();
+      trackRideResumed();
+    } else {
+      pauseRide();
+      trackRidePaused({ elapsed_seconds: active.elapsedSeconds, distance_km: active.distanceKm });
+    }
+  }, [active.isPaused, active.elapsedSeconds, active.distanceKm, pauseRide, resumeRide]);
 
   if (gpsError) {
     return (
